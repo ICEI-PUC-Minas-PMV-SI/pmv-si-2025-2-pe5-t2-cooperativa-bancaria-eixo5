@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '18'
-          distribution: 'temurin'
+          distribution: 'correcto'
 
       - name: Grant execute permission to Gradlew
         run: chmod +x gradlew
@@ -31,7 +31,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/libs/*-all.jar"
-          target: "/home/ubuntu/app/"
+          target: "/home/ubuntu/bank/"
 
       - name: Restart Ktor service on EC2
         uses: appleboy/ssh-action@v1.1.0
@@ -41,6 +41,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo systemctl stop ktor.service || true
-            sudo mv /home/ubuntu/app/*-all.jar /home/ubuntu/app/app.jar
-            sudo systemctl start ktor.service
-            sudo systemctl status ktor.service --no-pager
+            sudo mv /home/ubuntu/app/*-all.jar /home/ubuntu/bamk/app.jar
+            sudo systemctl start bank-backend
+            sudo systemctl status bank-backend --no-pager

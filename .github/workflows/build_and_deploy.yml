@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '18'
-          distribution: 'correcto'
+          distribution: 'corretto'
 
       - name: Grant execute permission to Gradlew
         run: chmod +x gradlew

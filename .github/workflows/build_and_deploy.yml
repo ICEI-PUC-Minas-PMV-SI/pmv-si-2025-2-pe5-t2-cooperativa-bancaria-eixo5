@@ -62,30 +62,28 @@ jobs:
             set -e
             echo "=== INICIANDO DEPLOY ==="
             
-            mv /home/ubuntu/bank/pucBank-all.jar /home/ubuntu/bank/app.jar
-            
-            cd /home/ubuntu/bank
+            cd /home/ubuntu/bank/build/libs
             
             # Parar aplicação atual se estiver rodando
             echo "Parando aplicação atual..."
-            pkill -f "java -jar app.jar" || true
+            pkill -f "java -jar pucBank-all.jar" || true
             sleep 2
             
             # Verificar se o novo JAR chegou
-            echo "Verificando app.jar..."
-            ls -la app.jar
-            echo "Tamanho: $(ls -lh app.jar | awk '{print $5}')"
+            echo "Verificando pucBank-all.jar"..."
+            ls -la pucBank-all.jar"
+            echo "Tamanho: $(ls -lh pucBank-all.jar" | awk '{print $5}')"
             
             # Iniciar nova aplicação em background
             echo "Iniciando nova aplicação..."
-            nohup java -jar app.jar > app.log 2>&1 &
+            nohup java -jar pucBank-all.jar" > app.log 2>&1 &
             
             # Verificar se iniciou
             echo "Aguardando inicialização..."
             sleep 10
             
             # Verificar se está rodando
-            if ps aux | grep "java -jar app.jar" | grep -v grep; then
+            if ps aux | grep "java -jar pucBank-all.jar"" | grep -v grep; then
               echo "✅ APLICAÇÃO RODANDO COM SUCESSO!"
               echo "=== LOGS RECENTES ==="
               tail -10 app.log

@@ -62,8 +62,9 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: ${{ steps.jar.outputs.jar_path }}
-          target: "/home/ubuntu/bank/new-app.jar"
+          source: "${{ steps.jar.outputs.jar_path }}"
+          target: "/home/ubuntu/bank/"
+          overwrite: true
 
       # Restart serviço
       - name: Restart Ktor service on EC2

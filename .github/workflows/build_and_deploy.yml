@@ -80,13 +80,19 @@ jobs:
 
           RELEASE_NAME="Release $VERSION"
 
-          LAST_VERSION=$(gh release list --limit 1 | awk '{print $1}' | sed 's/^v//')
-          echo "Latest GitHub Release: $LAST_VERSION"
+          LAST_VERSION=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null | sed 's/^v//')
+          echo "Latest GitHub Release Version: $LAST_VERSION"
 
-          if [ -n "$LAST_VERSION" ] && dpkg --compare-versions "$VERSION" "le" "$LAST_VERSION"; then
-            echo "Version $VERSION is not greater than $LAST_VERSION — skipping release."
-            exit 0
+          if [ -z "$LAST_VERSION" ]; then
+            echo "No previous releases found — creating the first one."
+          else
+            if dpkg --compare-versions "$VERSION" "le" "$LAST_VERSION"; then
+              echo "Version $VERSION is NOT greater than $LAST_VERSION — skipping release."
+              exit 0
+            fi
           fi
+
+          echo "Creating release v$VERSION..."
 
           gh release create "v$VERSION" build/libs/*-all.jar \
             --title "$RELEASE_NAME" \

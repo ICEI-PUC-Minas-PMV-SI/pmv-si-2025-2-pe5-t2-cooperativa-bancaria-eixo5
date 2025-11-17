@@ -13,8 +13,10 @@ jobs:
     environment: bank
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
+
 
       - name: Cache Gradle
         uses: actions/cache@v3
@@ -26,17 +28,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+
       - name: Set up JDK 18 (Corretto)
         uses: actions/setup-java@v4
         with:
           java-version: '18'
           distribution: 'corretto'
 
+
       - name: Grant execute permission to Gradlew
         run: chmod +x gradlew
 
+
       - name: Build Ktor fat JAR
         run: ./gradlew clean buildFatJar
+
 
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -48,6 +54,7 @@ jobs:
           target: "/home/ubuntu/bank/"
           overwrite: true
 
+
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -56,20 +63,18 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            echo "=== INICIANDO DEPLOY ==="
 
+            echo "=== INICIANDO DEPLOY ==="
             cd /home/ubuntu/bank/build/libs
 
             echo "=== PARANDO APLICAÇÃO ATUAL ==="
             PID=$(pgrep -f "java -jar pucBank-all.jar" || true)
-
             if [ -z "$PID" ]; then
               echo "Nenhum processo antigo encontrado. Continuando..."
             else
               echo "Processo encontrado (PID: $PID). Parando..."
               set +e
               kill -TERM $PID || true
-              # Aguarda o processo realmente terminar
               while kill -0 $PID 2>/dev/null; do
                 echo "Esperando processo $PID terminar..."
                 sleep 1
@@ -83,7 +88,6 @@ jobs:
 
             echo "Iniciando nova aplicação..."
             nohup java -jar pucBank-all.jar > app.log 2>&1 &
-
             echo "Aguardando inicialização..."
             sleep 10
 
@@ -100,3 +104,17 @@ jobs:
               cat app.log
               exit 1
             fi
+
+
+      - name: Publish JAR to GitHub Release
+        run: |
+          TAG_NAME="v$(date +'%Y.%m.%d.%H%M%S')"
+          RELEASE_NAME="Release $TAG_NAME"
+
+          gh release create "$TAG_NAME" build/libs/*-all.jar \
+            --title "$RELEASE_NAME" \
+            --notes "Automated release from GitHub Actions. Build from commit $GITHUB_SHA" \
+            --draft=false \
+            --prerelease=false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

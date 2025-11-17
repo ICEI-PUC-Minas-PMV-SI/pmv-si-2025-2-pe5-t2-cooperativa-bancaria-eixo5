@@ -74,5 +74,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo systemctl stop bank-backend || true
+            cd /home/ubuntu/bank
+            rm -f *.jar
+            sudo mv /home/ubuntu/bank/build/libs/pucBank-all.jar /home/ubuntu/bank/app.jar
             sudo systemctl start bank-backend
             sudo systemctl status bank-backend --no-pager

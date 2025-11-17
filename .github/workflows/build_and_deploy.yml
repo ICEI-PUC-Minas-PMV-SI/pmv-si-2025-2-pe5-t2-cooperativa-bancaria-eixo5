@@ -55,38 +55,17 @@ jobs:
           overwrite: true
 
 
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@v1.1.0
+      - name: Restart systemd service on EC2
+        uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            echo "=== INICIANDO DEPLOY ==="
-            cd /home/ubuntu/bank/build/libs
-
-            echo "Verificando pucBank-all.jar..."
-            ls -la pucBank-all.jar
-            echo "Tamanho: $(ls -lh pucBank-all.jar | awk '{print $5}')"
-
-            echo "Iniciando nova aplicação..."
-            nohup java -jar pucBank-all.jar > app.log 2>&1 &
-            echo "Aguardando inicialização..."
-            sleep 10
-
-            if ps aux | grep "java -jar pucBank-all.jar" | grep -v grep; then
-              echo "✅ APLICAÇÃO RODANDO COM SUCESSO!"
-              echo "=== LOGS RECENTES ==="
-              tail -10 app.log
-
-              echo "=== VERIFICANDO HEALTH ==="
-              curl -f http://localhost:8080/health || curl -f http://localhost:8080/ || echo "Aplicação iniciada mas health check falhou"
-            else
-              echo "❌ FALHA AO INICIAR APLICAÇÃO"
-              echo "=== LOGS COMPLETOS ==="
-              cat app.log
-              exit 1
-            fi
+            host: ${{ secrets.EC2_HOST }}
+            username: ubuntu
+            key: ${{ secrets.EC2_KEY }}
+            port: 22
+            script: |
+              sudo systemctl daemon-reload
+              sudo systemctl restart bank-backend.service
+              sudo systemctl status bank-backend.service --no-pager
 
 
       - name: Publish JAR to GitHub Release

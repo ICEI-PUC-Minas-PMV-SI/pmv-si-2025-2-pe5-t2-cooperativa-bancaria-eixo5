@@ -40,12 +40,14 @@ jobs:
       - name: Build Ktor fat JAR
         run: ./gradlew clean buildFatJar
 
-      # Salvar o caminho real do JAR
-      - name: Find generated JAR
-        id: jar
+      # Debug - Verificar o JAR gerado
+      - name: Debug JAR file
         run: |
-          FILE=$(ls build/libs/*-all.jar | head -n 1)
-          echo "jar_path=$FILE" >> $GITHUB_OUTPUT
+          echo "=== VERIFICANDO JAR GERADO ==="
+          find build/libs/ -name "*.jar" -type f
+          JAR_FILE=$(find build/libs/ -name "*-all.jar" -type f | head -1)
+          echo "JAR encontrado: $JAR_FILE"
+          ls -la $JAR_FILE
 
       # Criar release com o JAR gerado
       - name: Create GitHub Release
@@ -53,20 +55,20 @@ jobs:
         with:
           tag_name: "release-${{ github.run_number }}"
           name: "Build ${{ github.run_number }}"
-          files: ${{ steps.jar.outputs.jar_path }}
+          files: build/libs/*-all.jar
 
-      # Enviar JAR diretamente para o local correto
+      # Enviar JAR DIRETAMENTE para EC2 com nome correto
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "${{ steps.jar.outputs.jar_path }}"
-          target: "/home/ubuntu/bank/"
+          source: "build/libs/*-all.jar"
+          target: "/home/ubuntu/bank/app.jar"
           overwrite: true
 
-      # Restart serviço
+      # Restart serviço - SIMPLIFICADO
       - name: Restart Ktor service on EC2
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -75,35 +77,35 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            echo "=== Iniciando Deploy ==="
-
-            cd /home/ubuntu/bank
-            echo "Listando arquivos:"
-            ls -la
-
+            echo "=== INICIANDO DEPLOY ==="
+            
+            # Verificar se o arquivo chegou
+            echo "Verificando app.jar na EC2..."
+            ls -la /home/ubuntu/bank/app.jar
+            
             # Parar serviço
+            echo "Parando serviço..."
             sudo systemctl stop bank-backend || true
-
-            # Substituir JAR
-            if [ -f "new-app" ]; then
-              echo "Encontrado new-app, renomeando para app.jar..."
-              mv new-app app.jar
-              chmod +x app.jar
-              echo "✅ Arquivo renomeado com sucesso"
-            else
-            echo "ERRO: new-app não encontrado!"
-            echo "Arquivos disponíveis:"
-            ls -la
-            exit 1
-            fi
-
-            # Limpar possíveis arquivos temporários
-            rm -rf libs/ build/
-
-            # Reiniciar
+            
+            # Ajustar permissões
+            echo "Ajustando permissões..."
+            sudo chown ubuntu:ubuntu /home/ubuntu/bank/app.jar
+            sudo chmod +x /home/ubuntu/bank/app.jar
+            
+            # Limpar arquivos temporários
+            echo "Limpando arquivos temporários..."
+            cd /home/ubuntu/bank
+            rm -rf libs/ build/ new-app* temp*
+            
+            # Reiniciar serviço
+            echo "Reiniciando serviço..."
             sudo systemctl daemon-reload
             sudo systemctl start bank-backend
-
-            # Verificar
-            sleep 3
+            
+            # Verificar status
+            echo "Aguardando inicialização..."
+            sleep 5
+            echo "=== STATUS DO SERVIÇO ==="
             sudo systemctl status bank-backend --no-pager
+            
+            echo "✅ DEPLOY CONCLUÍDO COM SUCESSO!"

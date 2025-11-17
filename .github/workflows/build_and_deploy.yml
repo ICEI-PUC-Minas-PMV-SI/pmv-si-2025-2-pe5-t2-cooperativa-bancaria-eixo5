@@ -85,13 +85,13 @@ jobs:
             sudo systemctl stop bank-backend || true
 
             # Substituir JAR
-            if [ -f "new_app" ]; then
-              echo "Encontrado new_app, renomeando para app.jar..."
-              mv new_app app.jar
+            if [ -f "new-app" ]; then
+              echo "Encontrado new-app, renomeando para app.jar..."
+              mv new-app app.jar
               chmod +x app.jar
               echo "✅ Arquivo renomeado com sucesso"
             else
-            echo "ERRO: new_app não encontrado!"
+            echo "ERRO: new-app não encontrado!"
             echo "Arquivos disponíveis:"
             ls -la
             exit 1

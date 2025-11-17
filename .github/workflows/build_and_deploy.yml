@@ -16,7 +16,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Cache do Gradle
       - name: Cache Gradle
         uses: actions/cache@v3
         with:
@@ -36,11 +35,9 @@ jobs:
       - name: Grant execute permission to Gradlew
         run: chmod +x gradlew
 
-      # Build do Fat Jar
       - name: Build Ktor fat JAR
         run: ./gradlew clean buildFatJar
 
-      # Enviar JAR para EC2
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -51,7 +48,6 @@ jobs:
           target: "/home/ubuntu/bank/"
           overwrite: true
 
-      # Parar aplicação antiga e iniciar nova
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -61,34 +57,40 @@ jobs:
           script: |
             set -e
             echo "=== INICIANDO DEPLOY ==="
-            
+
             cd /home/ubuntu/bank/build/libs
-            
-            # Parar aplicação atual se estiver rodando
-            echo "Parando aplicação atual..."
-            pkill -f "java -jar pucBank-all.jar" || true
-            sleep 2
-            
-            # Verificar se o novo JAR chegou
-            echo "Verificando pucBank-all.jar"..."
-            ls -la pucBank-all.jar"
-            echo "Tamanho: $(ls -lh pucBank-all.jar" | awk '{print $5}')"
-            
-            # Iniciar nova aplicação em background
+
+            echo "=== PARANDO APLICAÇÃO ATUAL ==="
+            PID=$(pgrep -f "java -jar pucBank-all.jar" || true)
+
+            if [ -z "$PID" ]; then
+              echo "Nenhum processo antigo encontrado. Continuando..."
+            else
+              echo "Processo encontrado (PID: $PID). Parando..."
+              kill -TERM $PID
+              # Aguarda o processo realmente terminar
+              while kill -0 $PID 2>/dev/null; do
+                echo "Esperando processo $PID terminar..."
+                sleep 1
+              done
+              echo "Processo parado."
+            fi
+
+            echo "Verificando pucBank-all.jar..."
+            ls -la pucBank-all.jar
+            echo "Tamanho: $(ls -lh pucBank-all.jar | awk '{print $5}')"
+
             echo "Iniciando nova aplicação..."
-            nohup java -jar pucBank-all.jar" > app.log 2>&1 &
-            
-            # Verificar se iniciou
+            nohup java -jar pucBank-all.jar > app.log 2>&1 &
+
             echo "Aguardando inicialização..."
             sleep 10
-            
-            # Verificar se está rodando
-            if ps aux | grep "java -jar pucBank-all.jar"" | grep -v grep; then
+
+            if ps aux | grep "java -jar pucBank-all.jar" | grep -v grep; then
               echo "✅ APLICAÇÃO RODANDO COM SUCESSO!"
               echo "=== LOGS RECENTES ==="
               tail -10 app.log
-            
-              # Verificar se está respondendo (ajuste a porta conforme sua app)
+
               echo "=== VERIFICANDO HEALTH ==="
               curl -f http://localhost:8080/health || curl -f http://localhost:8080/ || echo "Aplicação iniciada mas health check falhou"
             else

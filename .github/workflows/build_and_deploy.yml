@@ -55,7 +55,7 @@ jobs:
           name: "Build ${{ github.run_number }}"
           files: ${{ steps.jar.outputs.jar_path }}
 
-      #Enviar para EC2
+      # Enviar JAR diretamente para o local correto
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -63,10 +63,9 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: ${{ steps.jar.outputs.jar_path }}
-          target: "/home/ubuntu/bank/"
-          strip_components: 1
+          target: "/home/ubuntu/bank/new-app.jar"
 
-      # Restart serviço com melhor tratamento de erro
+      # Restart serviço
       - name: Restart Ktor service on EC2
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -74,41 +73,30 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -e  # Para em caso de erro
-            echo "Parando serviço..."
+            set -e
+            echo "=== Iniciando Deploy ==="
+
+            # Parar serviço
             sudo systemctl stop bank-backend || true
-            
-            echo "Navegando para diretório..."
+
+            # Substituir JAR
             cd /home/ubuntu/bank
-            
-            echo "Listando arquivos no diretório..."
-            ls -la
-            
-            echo "Listando arquivos em build/libs/"
-            ls -la build/libs/ || echo "Diretório build/libs não existe"
-            
-            echo "Removendo JARs antigos..."
-            rm -f *.jar || true
-            
-            echo "Movendo novo JAR..."
-            # Verifica se o arquivo existe antes de mover
-            if [ -f "/home/ubuntu/bank/build/libs/"*-all.jar ]; then
-              sudo cp /home/ubuntu/bank/build/libs/*-all.jar /home/ubuntu/bank/app.jar
-              sudo chmod +x /home/ubuntu/bank/app.jar
-              sudo chown ubuntu:ubuntu /home/ubuntu/bank/app.jar
+            if [ -f new-app.jar ]; then
+              echo "Instalando novo JAR..."
+              mv -f new-app.jar app.jar
+              chmod +x app.jar
             else
-              echo "ERRO: Arquivo JAR não encontrado em build/libs/"
-              ls -la /home/ubuntu/bank/build/libs/ || exit 1
+              echo "ERRO: new-app.jar não encontrado!"
+              exit 1
             fi
-            
-            echo "Ajustando permissões..."
-            sudo chown ubuntu:ubuntu /home/ubuntu/bank/app.jar
-            chmod +x /home/ubuntu/bank/app.jar
-            
-            echo "Reiniciando serviço..."
+
+            # Limpar possíveis arquivos temporários
+            rm -rf libs/ build/
+
+            # Reiniciar
             sudo systemctl daemon-reload
             sudo systemctl start bank-backend
-            sleep 5
-            
-            echo "Verificando status do serviço..."
+
+            # Verificar
+            sleep 3
             sudo systemctl status bank-backend --no-pager

@@ -67,7 +67,7 @@ jobs:
               echo "Nenhum processo antigo encontrado. Continuando..."
             else
               echo "Processo encontrado (PID: $PID). Parando..."
-              kill -TERM $PID
+              kill -TERM $PID || true
               # Aguarda o processo realmente terminar
               while kill -0 $PID 2>/dev/null; do
                 echo "Esperando processo $PID terminar..."

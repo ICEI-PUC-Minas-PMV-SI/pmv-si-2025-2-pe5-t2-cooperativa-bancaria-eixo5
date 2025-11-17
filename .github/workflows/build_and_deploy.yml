@@ -77,13 +77,25 @@ jobs:
             set -e
             echo "=== Iniciando Deploy ==="
 
+            cd /home/ubuntu/bank
+            echo "Listando arquivos:"
+            ls -la
+
             # Parar serviço
             sudo systemctl stop bank-backend || true
 
             # Substituir JAR
-            echo "Instalando novo JAR..."
-            mv -f /home/ubuntu/bank/new_app.jar /home/ubuntu/bank/app.jar
-            chmod +x app.jar
+            if [ -f "new_app" ]; then
+              echo "Encontrado new_app, renomeando para app.jar..."
+              mv new_app app.jar
+              chmod +x app.jar
+              echo "✅ Arquivo renomeado com sucesso"
+            else
+            echo "ERRO: new_app não encontrado!"
+            echo "Arquivos disponíveis:"
+            ls -la
+            exit 1
+            fi
 
             # Limpar possíveis arquivos temporários
             rm -rf libs/ build/

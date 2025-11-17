@@ -40,24 +40,7 @@ jobs:
       - name: Build Ktor fat JAR
         run: ./gradlew clean buildFatJar
 
-      # Debug - Verificar o JAR gerado
-      - name: Debug JAR file
-        run: |
-          echo "=== VERIFICANDO JAR GERADO ==="
-          find build/libs/ -name "*.jar" -type f
-          JAR_FILE=$(find build/libs/ -name "*-all.jar" -type f | head -1)
-          echo "JAR encontrado: $JAR_FILE"
-          ls -la $JAR_FILE
-
-      # Criar release com o JAR gerado
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: "release-${{ github.run_number }}"
-          name: "Build ${{ github.run_number }}"
-          files: build/libs/*-all.jar
-
-      # Enviar JAR DIRETAMENTE para EC2 com nome correto
+      # Enviar JAR para EC2
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -68,8 +51,8 @@ jobs:
           target: "/home/ubuntu/bank/app.jar"
           overwrite: true
 
-      # Restart serviço - SIMPLIFICADO
-      - name: Restart Ktor service on EC2
+      # Parar aplicação antiga e iniciar nova
+      - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -79,33 +62,38 @@ jobs:
             set -e
             echo "=== INICIANDO DEPLOY ==="
             
-            # Verificar se o arquivo chegou
-            echo "Verificando app.jar na EC2..."
-            ls -la /home/ubuntu/bank/app.jar
-            
-            # Parar serviço
-            echo "Parando serviço..."
-            sudo systemctl stop bank-backend || true
-            
-            # Ajustar permissões
-            echo "Ajustando permissões..."
-            sudo chown ubuntu:ubuntu /home/ubuntu/bank/app.jar
-            sudo chmod +x /home/ubuntu/bank/app.jar
-            
-            # Limpar arquivos temporários
-            echo "Limpando arquivos temporários..."
             cd /home/ubuntu/bank
-            rm -rf libs/ build/ new-app* temp*
             
-            # Reiniciar serviço
-            echo "Reiniciando serviço..."
-            sudo systemctl daemon-reload
-            sudo systemctl start bank-backend
+            # Parar aplicação atual se estiver rodando
+            echo "Parando aplicação atual..."
+            pkill -f "java -jar app.jar" || true
+            sleep 2
             
-            # Verificar status
+            # Verificar se o novo JAR chegou
+            echo "Verificando app.jar..."
+            ls -la app.jar
+            echo "Tamanho: $(ls -lh app.jar | awk '{print $5}')"
+            
+            # Iniciar nova aplicação em background
+            echo "Iniciando nova aplicação..."
+            nohup java -jar app.jar > app.log 2>&1 &
+            
+            # Verificar se iniciou
             echo "Aguardando inicialização..."
-            sleep 5
-            echo "=== STATUS DO SERVIÇO ==="
-            sudo systemctl status bank-backend --no-pager
+            sleep 10
             
-            echo "✅ DEPLOY CONCLUÍDO COM SUCESSO!"
+            # Verificar se está rodando
+            if ps aux | grep "java -jar app.jar" | grep -v grep; then
+              echo "✅ APLICAÇÃO RODANDO COM SUCESSO!"
+              echo "=== LOGS RECENTES ==="
+              tail -10 app.log
+            
+              # Verificar se está respondendo (ajuste a porta conforme sua app)
+              echo "=== VERIFICANDO HEALTH ==="
+              curl -f http://localhost:8080/health || curl -f http://localhost:8080/ || echo "Aplicação iniciada mas health check falhou"
+            else
+              echo "❌ FALHA AO INICIAR APLICAÇÃO"
+              echo "=== LOGS COMPLETOS ==="
+              cat app.log
+              exit 1
+            fi

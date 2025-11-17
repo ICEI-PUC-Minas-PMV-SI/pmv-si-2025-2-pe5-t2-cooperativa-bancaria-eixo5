@@ -82,7 +82,7 @@ jobs:
 
             # Substituir JAR
             echo "Instalando novo JAR..."
-            mv -f new_app.jar app.jar
+            mv -f /home/ubuntu/bank/new_app.jar /home/ubuntu/bank/app.jar
             chmod +x app.jar
 
             # Limpar possíveis arquivos temporários

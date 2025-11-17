@@ -62,18 +62,16 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -e
-
             echo "=== INICIANDO DEPLOY ==="
             cd /home/ubuntu/bank/build/libs
 
             echo "=== PARANDO APLICAÇÃO ATUAL ==="
             PID=$(pgrep -f "java -jar pucBank-all.jar" || true)
+            
             if [ -z "$PID" ]; then
               echo "Nenhum processo antigo encontrado. Continuando..."
             else
               echo "Processo encontrado (PID: $PID). Parando..."
-              set +e
               kill -TERM $PID || true
               while kill -0 $PID 2>/dev/null; do
                 echo "Esperando processo $PID terminar..."

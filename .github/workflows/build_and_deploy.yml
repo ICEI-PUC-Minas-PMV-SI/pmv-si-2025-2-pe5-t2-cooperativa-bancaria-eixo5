@@ -70,7 +70,6 @@ jobs:
             script: |
               sudo systemctl daemon-reload
               sudo systemctl restart bank-backend.service
-              sudo journalctl -u bank-backend.service -f
               sudo systemctl status bank-backend.service --no-pager
 
 

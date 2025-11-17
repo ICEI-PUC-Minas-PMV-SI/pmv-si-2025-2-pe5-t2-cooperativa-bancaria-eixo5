@@ -81,15 +81,9 @@ jobs:
             sudo systemctl stop bank-backend || true
 
             # Substituir JAR
-            cd /home/ubuntu/bank
-            if [ -f new_app.jar ]; then
-              echo "Instalando novo JAR..."
-              mv -f new_app.jar app.jar
-              chmod +x app.jar
-            else
-              echo "ERRO: new_app.jar não encontrado!"
-              exit 1
-            fi
+            echo "Instalando novo JAR..."
+            mv -f new_app.jar app.jar
+            chmod +x app.jar
 
             # Limpar possíveis arquivos temporários
             rm -rf libs/ build/

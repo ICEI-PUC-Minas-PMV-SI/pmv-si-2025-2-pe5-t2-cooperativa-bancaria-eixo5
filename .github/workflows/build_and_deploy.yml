@@ -73,11 +73,6 @@ jobs:
             else
               echo "Processo encontrado (PID: $PID). Parando..."
               kill -TERM $PID || true
-              while kill -0 $PID 2>/dev/null; do
-                echo "Esperando processo $PID terminar..."
-                sleep 1
-              done
-              echo "Processo parado."
             fi
 
             echo "Verificando pucBank-all.jar..."

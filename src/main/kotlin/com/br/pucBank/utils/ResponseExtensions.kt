@@ -22,6 +22,18 @@ suspend inline fun <reified T> ApplicationCall.resultSuccess(
     )
 }
 
+suspend fun ApplicationCall.resultSuccess(
+    message: String? = null,
+    status: HttpStatusCode = HttpStatusCode.OK
+) {
+    this.respond(
+        status,
+        buildJsonObject {
+            message?.let { put("message", it) }
+        }
+    )
+}
+
 suspend inline fun <reified T> ApplicationCall.resultFailed(
     error: T? = null,
     message: String? = null,

@@ -29,8 +29,7 @@ fun Route.clientRoutes() {
 
     get("/clients/{id}") {
         val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.resultFailed(
-            "ID inválido",
-            status = HttpStatusCode.BadRequest
+            "ID inválido"
         )
 
         runCatching {
@@ -65,8 +64,7 @@ fun Route.clientRoutes() {
 
     put("/clients/{id}") {
         val id = call.parameters["id"]?.toIntOrNull() ?: return@put call.resultFailed(
-            "ID inválido",
-            status = HttpStatusCode.BadRequest
+            "ID inválido"
         )
 
         runCatching {
@@ -82,8 +80,7 @@ fun Route.clientRoutes() {
 
     delete("/clients/{id}") {
         val id = call.parameters["id"]?.toIntOrNull() ?: return@delete call.resultFailed(
-            "ID inválido",
-            status = HttpStatusCode.BadRequest
+            "ID inválido"
         )
 
         runCatching {

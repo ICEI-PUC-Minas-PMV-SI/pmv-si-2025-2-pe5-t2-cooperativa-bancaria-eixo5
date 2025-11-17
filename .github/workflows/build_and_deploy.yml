@@ -48,7 +48,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/libs/*-all.jar"
-          target: "/home/ubuntu/bank/app.jar"
+          target: "/home/ubuntu/bank/"
           overwrite: true
 
       # Parar aplicação antiga e iniciar nova
@@ -61,6 +61,8 @@ jobs:
           script: |
             set -e
             echo "=== INICIANDO DEPLOY ==="
+            
+            mv /home/ubuntu/bank/pucBank-all.jar /home/ubuntu/bank/app.jar
             
             cd /home/ubuntu/bank
             

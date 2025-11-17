@@ -55,7 +55,7 @@ jobs:
           name: "Build ${{ github.run_number }}"
           files: ${{ steps.jar.outputs.jar_path }}
 
-      # Enviar para EC2
+      #Enviar para EC2
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -64,8 +64,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: ${{ steps.jar.outputs.jar_path }}
           target: "/home/ubuntu/bank/"
+          strip_components: 1
 
-      # Restart serviço
+      # Restart serviço com melhor tratamento de erro
       - name: Restart Ktor service on EC2
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -73,9 +74,40 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e  # Para em caso de erro
+            echo "Parando serviço..."
             sudo systemctl stop bank-backend || true
+            
+            echo "Navegando para diretório..."
             cd /home/ubuntu/bank
-            rm -f *.jar
-            sudo mv /home/ubuntu/bank/build/libs/pucBank-all.jar /home/ubuntu/bank/app.jar
+            
+            echo "Listando arquivos no diretório..."
+            ls -la
+            
+            echo "Listando arquivos em build/libs/"
+            ls -la build/libs/ || echo "Diretório build/libs não existe"
+            
+            echo "Removendo JARs antigos..."
+            rm -f *.jar || true
+            
+            echo "Movendo novo JAR..."
+            # Verifica se o arquivo existe antes de mover
+            if [ -f "/home/ubuntu/bank/build/libs/"*-all.jar ]; then
+              sudo mv /home/ubuntu/bank/build/libs/*-all.jar /home/ubuntu/bank/app.jar
+              echo "JAR movido com sucesso"
+            else
+              echo "ERRO: Arquivo JAR não encontrado em build/libs/"
+              ls -la /home/ubuntu/bank/build/libs/ || exit 1
+            fi
+            
+            echo "Ajustando permissões..."
+            sudo chown ubuntu:ubuntu /home/ubuntu/bank/app.jar
+            chmod +x /home/ubuntu/bank/app.jar
+            
+            echo "Reiniciando serviço..."
+            sudo systemctl daemon-reload
             sudo systemctl start bank-backend
+            sleep 5
+            
+            echo "Verificando status do serviço..."
             sudo systemctl status bank-backend --no-pager

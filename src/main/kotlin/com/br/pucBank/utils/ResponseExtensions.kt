@@ -8,24 +8,30 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import javax.swing.UIManager.put
 
-suspend fun ApplicationCall.resultSuccess(data: Any? = null, message: String? = null, status: HttpStatusCode = HttpStatusCode.OK) {
+suspend inline fun <reified T> ApplicationCall.resultSuccess(
+    data: T? = null,
+    message: String? = null,
+    status: HttpStatusCode = HttpStatusCode.OK
+) {
     this.respond(
         status,
         buildJsonObject {
-            put("success", true)
             message?.let { put("message", it) }
-            data?.let { put("data", Json.encodeToJsonElement(it)) }
+            data?.let { put("data", Json.encodeToJsonElement(data)) }
         }
     )
 }
 
-suspend fun ApplicationCall.resultFailed(error: Any? = null, message: String? = null, status: HttpStatusCode = HttpStatusCode.BadRequest) {
+suspend inline fun <reified T> ApplicationCall.resultFailed(
+    error: T? = null,
+    message: String? = null,
+    status: HttpStatusCode = HttpStatusCode.BadRequest
+) {
     this.respond(
         status,
         buildJsonObject {
-            put("success", false)
             message?.let { put("message", it) }
-            error?.let { put("error", it) }
+            error?.let { put("error", Json.encodeToJsonElement(error)) }
         }
     )
 }

@@ -72,6 +72,23 @@ jobs:
           VERSION=$(grep -E "^version\s*=" build.gradle.kts | sed -E 's/version\s*=\s*"(.+)"/\1/')
           RELEASE_NAME="Release $VERSION"
 
+          echo "Current Gradle version: $VERSION"
+
+          LAST_VERSION=$(gh release list --limit 1 | awk '{print $1}' | sed 's/^v//')
+          echo "Latest GitHub Release version: $LAST_VERSION"
+
+          if [ -z "$LAST_VERSION" ]; then
+            echo "No previous releases found. Creating first release..."
+          else
+            if dpkg --compare-versions "$VERSION" "le" "$LAST_VERSION"; then
+              echo "❌ A versão ($VERSION) NÃO é maior que a última release ($LAST_VERSION)."
+              echo "➡️ Release será ignorada."
+              exit 0
+            fi
+          fi
+
+          echo "✔ Versão válida. Criando release v$VERSION..."
+
           gh release create "v$VERSION" build/libs/*-all.jar \
             --title "$RELEASE_NAME" \
             --notes "Automated release from GitHub Actions. Build from commit $GITHUB_SHA" \

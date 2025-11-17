@@ -93,8 +93,9 @@ jobs:
             echo "Movendo novo JAR..."
             # Verifica se o arquivo existe antes de mover
             if [ -f "/home/ubuntu/bank/build/libs/"*-all.jar ]; then
-              sudo mv /home/ubuntu/bank/build/libs/*-all.jar /home/ubuntu/bank/app.jar
-              echo "JAR movido com sucesso"
+              sudo cp /home/ubuntu/bank/build/libs/*-all.jar /home/ubuntu/bank/app.jar
+              sudo chmod +x /home/ubuntu/bank/app.jar
+              sudo chown ubuntu:ubuntu /home/ubuntu/bank/app.jar
             else
               echo "ERRO: Arquivo JAR não encontrado em build/libs/"
               ls -la /home/ubuntu/bank/build/libs/ || exit 1

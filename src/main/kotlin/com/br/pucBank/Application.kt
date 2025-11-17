@@ -1,13 +1,16 @@
 package com.br.pucBank
 
-import com.br.com.br.pucBank.routes.clientRoutes
+import com.br.pucBank.routes.clientRoutes
 import com.br.pucBank.data.database.DatabaseFactory
 import com.br.pucBank.data.di.pucBankDataModules
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.response.respond
+import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
 import org.koin.ktor.plugin.Koin
@@ -27,6 +30,13 @@ fun main() {
         }
 
         routing {
+            get("/health") {
+                call.respond(
+                    status = HttpStatusCode.OK,
+                    message = "OK"
+                )
+            }
+
             clientRoutes()
         }
     }.start(wait = true)

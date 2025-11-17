@@ -76,26 +76,30 @@ jobs:
       - name: Publish JAR to GitHub Release
         run: |
           VERSION=$(grep -oP 'version\s*=\s*"\K[^"]+' build.gradle.kts)
-          echo "VERSION=$VERSION"
+          echo "Project version: $VERSION"
 
-          RELEASE_NAME="Release $VERSION"
+          LAST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null)
+          echo "Latest GitHub release tag: $LAST_TAG"
 
-          LAST_VERSION=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null | sed 's/^v//')
-          echo "Latest GitHub Release Version: $LAST_VERSION"
-
-          if [ -z "$LAST_VERSION" ]; then
-            echo "No previous releases found — creating the first one."
+          # Validar se é semver: vX.Y.Z
+          if echo "$LAST_TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            LAST_VERSION=$(echo "$LAST_TAG" | sed 's/^v//')
+            echo "Valid semver found: $LAST_VERSION"
           else
-            if dpkg --compare-versions "$VERSION" "le" "$LAST_VERSION"; then
-              echo "Version $VERSION is NOT greater than $LAST_VERSION — skipping release."
-              exit 0
-            fi
+            echo "No valid semantic version tag found (ignoring '$LAST_TAG')."
+            LAST_VERSION=""
+          fi
+
+          # Comparação
+          if [ -n "$LAST_VERSION" ] && dpkg --compare-versions "$VERSION" "le" "$LAST_VERSION"; then
+            echo "Version $VERSION is NOT greater than $LAST_VERSION — skipping release."
+            exit 0
           fi
 
           echo "Creating release v$VERSION..."
 
           gh release create "v$VERSION" build/libs/*-all.jar \
-            --title "$RELEASE_NAME" \
+            --title "Release $VERSION" \
             --notes "Automated release from GitHub Actions. Build from commit $GITHUB_SHA"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

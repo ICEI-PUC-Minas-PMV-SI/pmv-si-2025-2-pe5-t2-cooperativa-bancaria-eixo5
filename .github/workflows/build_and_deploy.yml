@@ -65,16 +65,6 @@ jobs:
             echo "=== INICIANDO DEPLOY ==="
             cd /home/ubuntu/bank/build/libs
 
-            echo "=== PARANDO APLICAÇÃO ATUAL ==="
-            PID=$(pgrep -f "java -jar pucBank-all.jar" || true)
-            
-            if [ -z "$PID" ]; then
-              echo "Nenhum processo antigo encontrado. Continuando..."
-            else
-              echo "Processo encontrado (PID: $PID). Parando..."
-              kill -TERM $PID || true
-            fi
-
             echo "Verificando pucBank-all.jar..."
             ls -la pucBank-all.jar
             echo "Tamanho: $(ls -lh pucBank-all.jar | awk '{print $5}')"

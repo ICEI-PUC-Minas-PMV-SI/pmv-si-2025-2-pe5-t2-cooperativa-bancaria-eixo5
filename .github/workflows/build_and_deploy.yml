@@ -82,12 +82,12 @@ jobs:
 
             # Substituir JAR
             cd /home/ubuntu/bank
-            if [ -f new-app.jar ]; then
+            if [ -f new_app.jar ]; then
               echo "Instalando novo JAR..."
-              mv -f new-app.jar app.jar
+              mv -f new_app.jar app.jar
               chmod +x app.jar
             else
-              echo "ERRO: new-app.jar não encontrado!"
+              echo "ERRO: new_app.jar não encontrado!"
               exit 1
             fi
 

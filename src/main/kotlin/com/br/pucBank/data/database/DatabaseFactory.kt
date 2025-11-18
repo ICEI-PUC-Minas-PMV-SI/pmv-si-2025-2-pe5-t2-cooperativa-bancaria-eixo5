@@ -1,25 +1,30 @@
 package com.br.pucBank.data.database
 
-import com.br.pucBank.data.database.models.Clients
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
-
-const val BACKEND_IP = "3.226.219.79:3306"
+import io.ktor.server.application.*
 
 object DatabaseFactory {
-    fun init() {
-        Database.connect(
-            url = "jdbc:mysql://$BACKEND_IP/bank?useSSL=false&serverTimezone=UTC",
-            driver = "com.mysql.cj.jdbc.Driver",
-            user = "root",
-            password = "Viniciusneves0703@"
-        )
+    fun configure(environment: ApplicationEnvironment) {
+        val config = environment.config
 
-        transaction {
-            SchemaUtils.create(
-                Clients
-            )
-        }
+        val url = config.property("db.url").getString()
+        val user = config.property("db.user").getString()
+        val password = config.property("db.password").getString()
+
+        val flyway = Flyway.configure()
+            .dataSource(url, user, password)
+            .locations(config.property("flyway.locations").getString())
+            .baselineOnMigrate(true)
+            .load()
+
+        flyway.migrate()
+
+        Database.connect(
+            url = url,
+            driver = "com.mysql.cj.jdbc.Driver",
+            user = user,
+            password = password
+        )
     }
 }

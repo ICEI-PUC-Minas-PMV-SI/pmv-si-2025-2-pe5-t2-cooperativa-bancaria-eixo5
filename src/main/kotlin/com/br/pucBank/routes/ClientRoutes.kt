@@ -1,98 +1,84 @@
 package com.br.pucBank.routes
 
 import com.br.pucBank.data.repository.clients.ClientRepository
-import com.br.pucBank.domain.dto.ClientDTO
-import com.br.pucBank.utils.resultSuccess
+import com.br.pucBank.domain.clients.models.ClientRequest
+import com.br.pucBank.utils.defaultClientNotFoundResponse
 import com.br.pucBank.utils.resultFailed
-import io.ktor.http.HttpStatusCode
+import com.br.pucBank.utils.resultSuccess
+import com.br.pucBank.utils.validateAuthentication
+import io.ktor.http.*
+import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.delete
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.put
+import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.clientRoutes() {
     val repository: ClientRepository by inject()
 
-    get("/clients") {
-        runCatching {
-            repository.getAll()
-        }.onSuccess { clients ->
-            call.resultSuccess(clients)
-        }.onFailure { e ->
-            call.resultFailed(e.message)
+    post("/clients") {
+        val body = runCatching { call.receive<ClientRequest>() }
+            .getOrElse {
+                return@post call.resultFailed(
+                    message = "Dados inválidos",
+                    status = HttpStatusCode.BadRequest
+                )
+            }
+
+        val created = repository.create(body)
+
+        if (created != null) {
+            call.resultSuccess(created)
+        } else {
+            call.resultFailed(
+                message = "Não foi possível criar o cliente",
+                status = HttpStatusCode.InternalServerError
+            )
         }
     }
 
+    authenticate {
+        get("/clients/me") {
+            val principal = call.validateAuthentication()
 
-    get("/clients/{id}") {
-        val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.resultFailed(
-            "ID inválido"
-        )
+            val clientId = principal.payload.getClaim("id").asString()
 
-        runCatching {
-            repository.getById(id)
-        }.onSuccess { client ->
+            val client = repository.getById(clientId)
+
             if (client != null) {
                 call.resultSuccess(client)
             } else {
-                call.resultFailed("Cliente não encontrado", status = HttpStatusCode.NotFound)
+                call.defaultClientNotFoundResponse()
             }
-        }.onFailure { e ->
-            call.resultFailed(e.message, status = HttpStatusCode.InternalServerError)
         }
-    }
 
+        put("/clients/me") {
+            val principal = call.validateAuthentication()
 
-    post("/clients") {
-        runCatching {
-            val clientDTO = call.receive<ClientDTO>()
-            repository.create(clientDTO)
-        }.onSuccess { result ->
-            if (result != null) {
-                call.resultSuccess(result, status = HttpStatusCode.Created)
+            val clientId = principal.payload.getClaim("id").asString()
+
+            val body = call.receive<ClientRequest>()
+
+            val updated = repository.update(clientId, body)
+
+            if (updated) {
+                call.resultSuccess(message = "Cliente atualizado com sucesso")
             } else {
-                call.resultFailed("Cliente não foi criado")
+                call.defaultClientNotFoundResponse()
             }
-        }.onFailure { e ->
-            call.resultFailed(e.message, status = HttpStatusCode.InternalServerError)
         }
-    }
 
+        delete("/clients/me") {
+            val principal = call.validateAuthentication()
 
-    put("/clients/{id}") {
-        val id = call.parameters["id"]?.toIntOrNull() ?: return@put call.resultFailed(
-            "ID inválido"
-        )
+            val clientId = principal.payload.getClaim("id").asString()
 
-        runCatching {
-            val clientDTO = call.receive<ClientDTO>()
-            repository.update(id, clientDTO)
-        }.onSuccess { result ->
-            call.resultSuccess(result)
-        }.onFailure { e ->
-            call.resultFailed(e.message, status = HttpStatusCode.InternalServerError)
-        }
-    }
+            val removed = repository.delete(clientId)
 
-
-    delete("/clients/{id}") {
-        val id = call.parameters["id"]?.toIntOrNull() ?: return@delete call.resultFailed(
-            "ID inválido"
-        )
-
-        runCatching {
-            repository.delete(id)
-        }.onSuccess { deleted ->
-            if (deleted) {
-                call.resultSuccess(message = "Cliente removido")
+            if (removed) {
+                call.resultSuccess(message = "Cliente removido com sucesso")
             } else {
-                call.resultFailed("Cliente não foi removido", status = HttpStatusCode.NotFound)
+                call.defaultClientNotFoundResponse()
             }
-        }.onFailure { e ->
-            call.resultFailed(e.message, status = HttpStatusCode.InternalServerError)
         }
     }
 }

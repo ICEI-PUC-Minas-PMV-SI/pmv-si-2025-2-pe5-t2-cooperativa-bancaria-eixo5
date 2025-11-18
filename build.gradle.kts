@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.br.pucBank"
-version = "0.1.2"
+version = "0.1.3"
 
 application {
     mainClass = "com.br.pucBank.ApplicationKt"
@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.ktor.server.host.common)
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.auth.jwt)
 
     implementation(libs.logback.classic)
 
@@ -30,6 +31,7 @@ dependencies {
 
     implementation(libs.sqlite.jdbc)
     implementation(libs.mysql.connector)
+    implementation(libs.flyway.core)
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)

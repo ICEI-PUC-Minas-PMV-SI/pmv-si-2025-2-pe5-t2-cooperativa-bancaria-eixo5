@@ -1,62 +1,75 @@
 package com.br.pucBank.data.repository.clients
 
 import com.br.com.br.pucBank.utils.Logger
-import com.br.pucBank.domain.dto.ClientDTO
-import com.br.pucBank.domain.mappers.ClientDTOMapper
+import com.br.pucBank.domain.clients.models.ClientResponse
 import com.br.pucBank.data.database.models.Clients
+import com.br.pucBank.domain.clients.mappers.ClientResponseMapper
+import com.br.pucBank.domain.clients.models.ClientRequest
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
+import java.util.UUID
 
 class ClientRepositoryImpl(
-    private val clientDTOMapper: ClientDTOMapper
+    private val clientResponseMapper: ClientResponseMapper
 ) : ClientRepository {
 
-    override fun getAll(): List<ClientDTO> = transaction {
-        Clients.selectAll().map { resultRow ->
-            clientDTOMapper.toObject(resultRow)
-        }
+    override suspend fun getAll(): List<ClientResponse> = transaction {
+        Clients.selectAll().map(clientResponseMapper::toObject)
     }
 
-    override fun getById(id: Int): ClientDTO? = transaction {
-        Clients.select {
-            Clients.id eq id
-        }.map { resultRow ->
-            clientDTOMapper.toObject(resultRow)
-        }.singleOrNull()
+    override suspend fun getById(id: String): ClientResponse? = transaction {
+        Clients.select { Clients.id eq id }
+            .map(clientResponseMapper::toObject)
+            .singleOrNull()
     }
 
-    override fun create(clientDto: ClientDTO): ClientDTO? = transaction {
+    override suspend fun create(clientRequest: ClientRequest): ClientResponse? = transaction {
         try {
-            val id = Clients.insert {
-                it[name] = clientDto.name
-                it[email] = clientDto.email
-            } get Clients.id
+            val clientId = UUID.randomUUID().toString()
 
-            getById(id)
+            Clients.insert {
+                it[id] = clientId
+                it[name] = clientRequest.name
+                it[email] = clientRequest.email
+                it[agency] = clientRequest.agency
+                it[account] = clientRequest.account
+                it[password] = clientRequest.password
+            }
+
+            runBlocking {
+                getById(clientId)
+            }
         } catch (e: Exception) {
             Logger.e(e.message)
-
             null
         }
     }
 
-    override fun update(id: Int, clientDto: ClientDTO): Boolean = transaction {
+    override suspend fun update(id: String, clientRequest: ClientRequest): Boolean = transaction {
         Clients.update(
-            where = { Clients.id eq id }
+            { Clients.id eq id }
         ) {
-            it[name] = clientDto.name
-            it[email] = clientDto.email
+            it[name] = clientRequest.name
+            it[email] = clientRequest.email
+            it[password] = clientRequest.password
         } > 0
     }
 
-    override fun delete(id: Int): Boolean = transaction{
+    override suspend fun delete(id: String): Boolean = transaction {
         Clients.deleteWhere {
             Clients.id eq id
         } > 0
+    }
+
+    override suspend fun findByAgencyAndAccount(
+        agency: Int,
+        account: Int
+    ): ClientResponse? = transaction {
+        Clients.select {
+            (Clients.agency eq agency) and (Clients.account eq account)
+        }.map(clientResponseMapper::toObject)
+            .singleOrNull()
     }
 }

@@ -47,3 +47,18 @@ suspend inline fun <reified T> ApplicationCall.resultFailed(
         }
     )
 }
+
+suspend inline fun ApplicationCall.resultFailed(
+    message: String? = null,
+    status: HttpStatusCode = HttpStatusCode.BadRequest
+) {
+    this.respond(
+        status,
+        buildJsonObject {
+            message?.let { put("message", it) }
+        }
+    )
+}
+
+suspend fun ApplicationCall.defaultClientNotFoundResponse() =
+    this.resultFailed(message = "Cliente não encontrado", status = HttpStatusCode.NotFound)

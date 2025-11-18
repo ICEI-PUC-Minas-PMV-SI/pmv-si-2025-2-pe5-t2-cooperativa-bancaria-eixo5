@@ -1,26 +1,18 @@
 package com.br.pucBank.data.repository.clients
 
-import com.br.pucBank.domain.dto.ClientDTO
+import com.br.pucBank.domain.clients.models.ClientRequest
+import com.br.pucBank.domain.clients.models.ClientResponse
 
 interface ClientRepository {
+    suspend fun getAll(): List<ClientResponse>
 
-    fun getAll(): List<ClientDTO>
+    suspend fun getById(id: String): ClientResponse?
 
-    fun getById(
-        id: Int
-    ): ClientDTO?
+    suspend fun create(clientRequest: ClientRequest): ClientResponse?
 
-    fun create(
-        clientDto: ClientDTO
-    ): ClientDTO?
+    suspend fun update(id: String, clientRequest: ClientRequest): Boolean
 
-    fun update(
-        id: Int,
-        clientDto: ClientDTO
-    ): Boolean
+    suspend fun delete(id: String): Boolean
 
-    fun delete(
-        id: Int
-    ): Boolean
-
+    suspend fun findByAgencyAndAccount(agency: Int, account: Int): ClientResponse?
 }

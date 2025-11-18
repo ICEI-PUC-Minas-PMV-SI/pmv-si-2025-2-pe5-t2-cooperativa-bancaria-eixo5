@@ -1,4 +1,4 @@
-package com.br.com.br.pucBank.utils
+package com.br.pucBank.utils
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

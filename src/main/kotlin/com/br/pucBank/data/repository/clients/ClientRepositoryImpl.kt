@@ -1,6 +1,6 @@
 package com.br.pucBank.data.repository.clients
 
-import com.br.com.br.pucBank.utils.Logger
+import com.br.pucBank.utils.Logger
 import com.br.pucBank.domain.clients.models.ClientResponse
 import com.br.pucBank.data.database.models.Clients
 import com.br.pucBank.domain.clients.mappers.ClientResponseMapper

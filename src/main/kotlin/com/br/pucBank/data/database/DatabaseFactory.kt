@@ -1,6 +1,6 @@
 package com.br.pucBank.data.database
 
-import com.br.com.br.pucBank.utils.Logger
+import com.br.pucBank.utils.Logger
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import io.ktor.server.application.*

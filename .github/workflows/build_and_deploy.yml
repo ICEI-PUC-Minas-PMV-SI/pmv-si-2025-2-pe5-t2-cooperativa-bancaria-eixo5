@@ -46,21 +46,9 @@ jobs:
         run: chmod +x gradlew
 
 
-      - name: Convert SQL files to Unix format
-        run: |
-          sudo apt update && sudo apt install dos2unix -y
-          find src/main/resources/db/migration -type f -name "*.sql" -exec dos2unix {} +
-
-
       - name: Build fat JAR
         run: ./gradlew clean fatJar
 
-
-      - name: Verify migration files in JAR
-        run: |
-          echo "Checking db/migration in the fat JAR..."
-          ls build/libs/
-          jar tf build/libs/*.jar | grep db/migration || true
 
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7

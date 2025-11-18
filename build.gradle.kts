@@ -29,7 +29,6 @@ dependencies {
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jbdc)
 
-    implementation(libs.sqlite.jdbc)
     implementation(libs.mysql.connector)
     implementation(libs.flyway.core)
     implementation(libs.flyway.mysql)

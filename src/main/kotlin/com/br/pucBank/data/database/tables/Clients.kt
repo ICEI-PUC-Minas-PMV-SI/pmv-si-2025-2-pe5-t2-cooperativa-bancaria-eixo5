@@ -1,8 +1,8 @@
-package com.br.pucBank.data.database.models
+package com.br.pucBank.data.database.tables
 
 import org.jetbrains.exposed.sql.Table
 
-object Clients : Table() {
+object Clients : Table("clients") {
     val id = varchar("id", 250)
     val account = integer("account").uniqueIndex()
     val agency = integer("agency")

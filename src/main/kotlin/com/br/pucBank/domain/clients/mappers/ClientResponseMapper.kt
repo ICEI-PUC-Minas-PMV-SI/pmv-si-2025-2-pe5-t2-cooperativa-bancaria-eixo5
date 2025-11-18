@@ -1,7 +1,7 @@
 package com.br.pucBank.domain.clients.mappers
 
 import com.br.pucBank.domain.clients.models.ClientResponse
-import com.br.pucBank.data.database.models.Clients
+import com.br.pucBank.data.database.tables.Clients
 import com.br.pucBank.utils.Mapper
 import org.jetbrains.exposed.sql.ResultRow
 

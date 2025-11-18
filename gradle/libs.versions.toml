@@ -7,7 +7,7 @@ logback = "1.4.14"
 exposed = "0.41.1"
 sqlite-jdbc = "3.42.0.0"
 mysql-connector-version = "8.0.33"
-flyway = "9.22.3"
+flyway = "10.12.0"
 hiraki = "5.1.0"
 
 [libraries]

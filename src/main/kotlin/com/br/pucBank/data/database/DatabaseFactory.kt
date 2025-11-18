@@ -1,7 +1,6 @@
 package com.br.pucBank.data.database
 
 import com.br.pucBank.utils.Logger
-import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import io.ktor.server.application.*
 import java.sql.DriverManager
@@ -26,49 +25,6 @@ object DatabaseFactory {
             DriverManager.getConnection(url, user, password).use {
                 Logger.i { "✅ Conexão MySQL OK" }
             }
-
-            Logger.i { "📋 Listando todas as migrações disponíveis..." }
-            try {
-                val resources = javaClass.classLoader.getResources("db/migration")
-                var foundAny = false
-
-                while (resources.hasMoreElements()) {
-                    val resource = resources.nextElement()
-                    Logger.i { resource.toString() }
-                    foundAny = true
-                }
-
-                if (!foundAny) {
-                    Logger.e("❌ NENHUM arquivo de migração encontrado!")
-                }
-
-            } catch (e: Exception) {
-                Logger.e("❌ Erro ao listar migrações: ${e.message}")
-            }
-
-            Logger.i { "⏳ Configurando Flyway..." }
-            val flyway = Flyway.configure()
-                .baselineOnMigrate(true)
-                .baselineVersion("0")
-                .validateMigrationNaming(true)
-                .validateOnMigrate(true)
-                .dataSource(url, user, password)
-                .locations(flywayLocations)
-                .load()
-
-            val info = flyway.info()
-            Logger.i { "📊 Status do Flyway:" }
-            Logger.i { "- Migrações aplicadas: ${info.applied().size}" }
-
-            if (info.pending().isEmpty()) {
-                Logger.w { "🚨 ALERTA: Nenhuma migração pendente!" }
-                Logger.w { "🚨 O Flyway não está encontrando seu arquivo SQL!" }
-
-                throw IllegalArgumentException()
-            }
-
-            val result = flyway.migrate()
-            Logger.i { "✅ Resultado: ${result.migrationsExecuted} migrações executadas" }
 
             Database.connect(
                 url = url,

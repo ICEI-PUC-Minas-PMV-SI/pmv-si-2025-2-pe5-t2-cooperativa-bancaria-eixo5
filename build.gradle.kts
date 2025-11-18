@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.sqlite.jdbc)
     implementation(libs.mysql.connector)
     implementation(libs.flyway.core)
+    implementation(libs.flyway.mysql)
     implementation(libs.hiraki)
 
     testImplementation(libs.ktor.server.test.host)

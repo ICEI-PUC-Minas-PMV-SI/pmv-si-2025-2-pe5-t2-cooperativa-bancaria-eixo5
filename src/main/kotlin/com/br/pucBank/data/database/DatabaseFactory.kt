@@ -22,16 +22,22 @@ object DatabaseFactory {
         Logger.i { "📍 Flyway Locations: $flywayLocations" }
 
         try {
-            // 1. Criar DataSource com HikariCP
-            val dataSource = createHikariDataSource(url, user, password)
+            val dataSource = createHikariDataSource(
+                url = url,
+                user = user,
+                sqlPassword = password
+            )
             Logger.i { "✅ HikariCP DataSource criado" }
 
-            // 2. Executar migrações do Flyway
-            runFlywayMigrations(dataSource, flywayLocations)
+            runFlywayMigrations(
+                dataSource = dataSource,
+                locations = flywayLocations
+            )
             Logger.i { "✅ Migrações Flyway executadas" }
 
-            // 3. Conectar Exposed ao DataSource
-            Database.connect(dataSource)
+            Database.connect(
+                datasource = dataSource
+            )
             Logger.i { "✅ Exposed conectado ao DataSource" }
 
             Logger.i { "🎉 DatabaseFactory configurado com sucesso!" }
@@ -70,7 +76,6 @@ object DatabaseFactory {
         val migrationsApplied = flyway.migrate()
         Logger.i { "✅ Migrações aplicadas: $migrationsApplied" }
 
-        // Log das migrações
         flyway.info().applied().forEach { migration ->
             Logger.i { "📋 ${migration.version} - ${migration.description}" }
         }

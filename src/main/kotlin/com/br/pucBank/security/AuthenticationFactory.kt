@@ -10,12 +10,10 @@ import java.util.Date
 class AuthenticationFactory(
     application: Application
 ) {
-    private val config = application.environment.config
-
-    private val jwtAudience = config.property("jwt.audience").getString()
-    private val jwtIssuer = config.property("jwt.issuer").getString()
-    private val jwtRealm = config.property("jwt.realm").getString()
-    private val secret = config.property("jwt.secret").getString()
+    private val jwtAudience = System.getenv("JWT_AUDIENCE") ?: application.environment.config.property("jwt.audience").getString()
+    private val jwtIssuer = System.getenv("JWT_ISSUER") ?: application.environment.config.property("jwt.issuer").getString()
+    private val jwtRealm = "bank-clients"
+    private val secret = System.getenv("JWT_SECRET") ?: application.environment.config.property("jwt.secret").getString()
 
     fun configure(app: Application) {
         app.install(Authentication) {

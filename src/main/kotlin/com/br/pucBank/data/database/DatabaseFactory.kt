@@ -6,15 +6,15 @@ import io.ktor.server.application.*
 
 object DatabaseFactory {
     fun configure(environment: ApplicationEnvironment) {
-        val config = environment.config
+        val url = System.getenv("DB_URL") ?: environment.config.property("db.url").getString()
+        val user = System.getenv("DB_USER") ?: environment.config.property("db.user").getString()
+        val password = System.getenv("DB_PASSWORD") ?: environment.config.property("db.password").getString()
 
-        val url = config.property("db.url").getString()
-        val user = config.property("db.user").getString()
-        val password = config.property("db.password").getString()
+        val flywayLocations = System.getenv("FLYWAY_LOCATIONS") ?: environment.config.property("flyway.locations").getString()
 
         val flyway = Flyway.configure()
             .dataSource(url, user, password)
-            .locations(config.property("flyway.locations").getString())
+            .locations(flywayLocations)
             .baselineOnMigrate(true)
             .baselineVersion("0")
             .validateOnMigrate(true)

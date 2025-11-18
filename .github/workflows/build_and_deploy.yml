@@ -93,7 +93,7 @@ jobs:
           # Comparação
           if [ -n "$LAST_VERSION" ] && dpkg --compare-versions "$VERSION" "le" "$LAST_VERSION"; then
             echo "Version $VERSION is NOT greater than $LAST_VERSION — skipping release."
-            exit 0
+            exit 1
           fi
 
           echo "Creating release v$VERSION..."

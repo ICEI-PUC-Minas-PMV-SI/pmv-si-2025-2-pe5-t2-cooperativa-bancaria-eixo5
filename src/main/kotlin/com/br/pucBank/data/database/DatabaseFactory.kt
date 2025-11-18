@@ -72,6 +72,9 @@ object DatabaseFactory {
             .dataSource(dataSource)
             .locations(locations)
             .baselineOnMigrate(true)
+            .sqlMigrationPrefix("V")
+            .sqlMigrationSeparator("__")
+            .sqlMigrationSuffixes(".sql")
             .load()
 
         Logger.i { "🔄 Executando migrações Flyway..." }

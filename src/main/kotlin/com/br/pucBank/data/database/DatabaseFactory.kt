@@ -3,6 +3,7 @@ package com.br.pucBank.data.database
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import io.ktor.server.application.*
+import java.sql.DriverManager
 
 object DatabaseFactory {
     fun configure(environment: ApplicationEnvironment) {
@@ -10,7 +11,13 @@ object DatabaseFactory {
         val user = System.getenv("DB_USER") ?: environment.config.property("db.user").getString()
         val password = System.getenv("DB_PASSWORD") ?: environment.config.property("db.password").getString()
 
-        val flywayLocations = System.getenv("FLYWAY_LOCATIONS") ?: environment.config.property("flyway.locations").getString()
+        val flywayLocations =
+            System.getenv("FLYWAY_LOCATIONS") ?: environment.config.property("flyway.locations").getString()
+
+        Class.forName("com.mysql.cj.jdbc.Driver")
+        DriverManager.getConnection(url, user, password).use {
+            println("✅ Conexão básica com MySQL bem-sucedida!")
+        }
 
         val flyway = Flyway.configure()
             .dataSource(url, user, password)

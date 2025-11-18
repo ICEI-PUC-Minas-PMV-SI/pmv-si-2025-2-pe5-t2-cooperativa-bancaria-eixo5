@@ -5,7 +5,6 @@ import org.jetbrains.exposed.sql.Database
 import io.ktor.server.application.*
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import org.flywaydb.core.Flyway
 import javax.sql.DataSource
 
 object DatabaseFactory {
@@ -28,12 +27,6 @@ object DatabaseFactory {
                 sqlPassword = password
             )
             Logger.i { "✅ HikariCP DataSource criado" }
-
-            runFlywayMigrations(
-                dataSource = dataSource,
-                locations = flywayLocations
-            )
-            Logger.i { "✅ Migrações Flyway executadas" }
 
             Database.connect(
                 datasource = dataSource
@@ -63,23 +56,5 @@ object DatabaseFactory {
             addDataSourceProperty("prepStmtCacheSize", "250")
             addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
         })
-    }
-
-    private fun runFlywayMigrations(dataSource: DataSource, locations: String) {
-        val flyway = Flyway
-            .configure()
-            .validateMigrationNaming(true)
-            .dataSource(dataSource)
-            .locations("classpath:db/migration")
-            .baselineOnMigrate(true)
-            .load()
-
-        Logger.i { "🔄 Executando migrações Flyway..." }
-        val migrationsApplied = flyway.migrate()
-        Logger.i { "✅ Migrações aplicadas: $migrationsApplied" }
-
-        flyway.info().applied().forEach { migration ->
-            Logger.i { "📋 ${migration.version} - ${migration.description}" }
-        }
     }
 }

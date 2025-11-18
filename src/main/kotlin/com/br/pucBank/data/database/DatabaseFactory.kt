@@ -48,12 +48,12 @@ object DatabaseFactory {
 
             Logger.i { "⏳ Configurando Flyway..." }
             val flyway = Flyway.configure()
-                .dataSource(url, user, password)
-                .locations(flywayLocations)
-                .validateMigrationNaming(true)
-                .validateOnMigrate(true)
                 .baselineOnMigrate(true)
                 .baselineVersion("0")
+                .validateMigrationNaming(true)
+                .validateOnMigrate(true)
+                .dataSource(url, user, password)
+                .locations(flywayLocations)
                 .load()
 
             val info = flyway.info()

@@ -39,22 +39,21 @@ dependencies {
 }
 
 
-tasks.register<Jar>("fatJarKtor") {
+tasks.register<Jar>("fatJar") {
     group = "build"
-    description = "Builds a fat JAR including all dependencies"
+    description = "Builds a fat JAR including resources for Flyway"
 
-    archiveBaseName.set("pucBank-all")
-    archiveVersion.set("")
+    archiveClassifier.set("all")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(sourceSets.main.get().output)
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+
+    from("src/main/resources") {
+        include("db/migration/**")
+    }
 
     manifest {
         attributes["Main-Class"] = "com.br.pucBank.ApplicationKt"
     }
-
-    from(sourceSets.main.get().output)
-
-    dependsOn(configurations.runtimeClasspath)
-    from({
-        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
-    })
 }

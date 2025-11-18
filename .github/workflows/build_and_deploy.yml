@@ -52,8 +52,8 @@ jobs:
           find src/main/resources/db/migration -type f -name "*.sql" -exec dos2unix {} +
 
 
-      - name: Build Ktor fat JAR
-        run: ./gradlew clean fatJarKtor
+      - name: Build fat JAR
+        run: ./gradlew clean fatJar
 
 
       - name: Verify migration files in JAR

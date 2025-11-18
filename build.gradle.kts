@@ -43,7 +43,7 @@ tasks.register<Jar>("fatJar") {
     group = "build"
     description = "Builds a fat JAR including resources for Flyway"
 
-    archiveClassifier.set("all")
+    archiveClassifier.set("pucBank-all")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     from(sourceSets.main.get().output)

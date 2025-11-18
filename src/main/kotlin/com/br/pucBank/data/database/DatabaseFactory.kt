@@ -28,13 +28,17 @@ object DatabaseFactory {
             }
 
             println("🔍 Verificando migração no classpath...")
-            val migrationFile = "db/migration/V1__create_clients_table.sql"
-            val resourceUrl = javaClass.classLoader.getResource(migrationFile)
-            if (resourceUrl != null) {
-                Logger.i { "✅ Arquivo encontrado: $migrationFile" }
-                Logger.i { "📍 Localização: $resourceUrl" }
-            } else {
-                Logger.e("❌ ARQUIVO NÃO ENCONTRADO: $migrationFile")
+            val migrationFiles = listOf(
+                "db/migration/V1__create_clients_table.sql"
+            )
+            migrationFiles.forEach { migrationFile ->
+                val resourceUrl = javaClass.classLoader.getResource(migrationFile)
+                if (resourceUrl != null) {
+                    Logger.i { "✅ Arquivo encontrado: $migrationFile" }
+                    Logger.i { "📍 Localização: $resourceUrl" }
+                } else {
+                    Logger.e("❌ ARQUIVO NÃO ENCONTRADO: $migrationFile")
+                }
             }
 
             Logger.i { "📋 Listando todas as migrações disponíveis..." }

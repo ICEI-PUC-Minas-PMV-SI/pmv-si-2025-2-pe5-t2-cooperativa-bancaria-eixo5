@@ -66,13 +66,11 @@ object DatabaseFactory {
     }
 
     private fun runFlywayMigrations(dataSource: DataSource, locations: String) {
-        val flywayLocations = locations.split(",").map { it.trim() }.toTypedArray()
-
         val flyway = Flyway
             .configure()
             .validateMigrationNaming(true)
             .dataSource(dataSource)
-            .locations(*flywayLocations)
+            .locations("classpath:db/migration")
             .baselineOnMigrate(true)
             .load()
 

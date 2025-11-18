@@ -1,0 +1,2 @@
+ALTER TABLE clients
+MODIFY COLUMN agency VARCHAR(5);

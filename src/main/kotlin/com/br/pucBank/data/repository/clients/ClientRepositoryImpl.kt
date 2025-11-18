@@ -64,7 +64,7 @@ class ClientRepositoryImpl(
     }
 
     override suspend fun findByAgencyAndAccount(
-        agency: Int,
+        agency: String,
         account: Int
     ): ClientResponse? = transaction {
         Clients.select {

@@ -7,6 +7,6 @@ data class ClientRequest(
     val name: String,
     val email: String,
     val account: Int,
-    val agency: Int,
+    val agency: String,
     val password: Int
 )

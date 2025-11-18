@@ -14,5 +14,5 @@ interface ClientRepository {
 
     suspend fun delete(id: String): Boolean
 
-    suspend fun findByAgencyAndAccount(agency: Int, account: Int): ClientResponse?
+    suspend fun findByAgencyAndAccount(agency: String, account: Int): ClientResponse?
 }

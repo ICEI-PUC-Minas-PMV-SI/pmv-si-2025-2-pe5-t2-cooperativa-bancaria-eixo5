@@ -14,26 +14,46 @@ object DatabaseFactory {
         val flywayLocations =
             System.getenv("FLYWAY_LOCATIONS") ?: environment.config.property("flyway.locations").getString()
 
-        Class.forName("com.mysql.cj.jdbc.Driver")
-        DriverManager.getConnection(url, user, password).use {
-            println("✅ Conexão básica com MySQL bem-sucedida!")
+        println("=== DIAGNÓSTICO FLYWAY ===")
+        println("URL: $url")
+        println("Flyway Locations: $flywayLocations")
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver")
+            println("✅ Driver MySQL carregado")
+
+            DriverManager.getConnection(url, user, password).use {
+                println("✅ Conexão básica com MySQL bem-sucedida!")
+            }
+
+            println("⏳ Flyway version: ${Flyway::class.java.`package`.implementationVersion}")
+
+            println("⏳ Configurando Flyway...")
+            val flyway = Flyway.configure()
+                .dataSource(url, user, password)
+                .locations(flywayLocations)
+                .baselineOnMigrate(true)
+                .baselineVersion("0")
+                .validateOnMigrate(true)
+                .load()
+
+            println("✅ Flyway configurado, executando migrações...")
+            val migrationsApplied = flyway.migrate()
+            println("✅ Migrações aplicadas: $migrationsApplied")
+
+            Database.connect(
+                url = url,
+                driver = "com.mysql.cj.jdbc.Driver",
+                user = user,
+                password = password
+            )
+            println("✅ Exposed conectado com sucesso!")
+
+        } catch (e: Exception) {
+            println("❌ ERRO CRÍTICO: ${e.javaClass.name}")
+            println("❌ Mensagem: ${e.message}")
+            e.printStackTrace()
+            throw e
         }
-
-        val flyway = Flyway.configure()
-            .dataSource(url, user, password)
-            .locations(flywayLocations)
-            .baselineOnMigrate(true)
-            .baselineVersion("0")
-            .validateOnMigrate(true)
-            .load()
-
-        flyway.migrate()
-
-        Database.connect(
-            url = url,
-            driver = "com.mysql.cj.jdbc.Driver",
-            user = user,
-            password = password
-        )
     }
 }

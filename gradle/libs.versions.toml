@@ -31,6 +31,7 @@ exposed-jbdc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "e
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 mysql-connector = { module = "mysql:mysql-connector-java", version.ref = "mysql-connector-version" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-mysql = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

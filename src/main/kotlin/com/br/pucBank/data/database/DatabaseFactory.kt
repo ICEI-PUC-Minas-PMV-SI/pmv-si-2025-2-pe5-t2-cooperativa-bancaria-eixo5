@@ -16,6 +16,8 @@ object DatabaseFactory {
             .dataSource(url, user, password)
             .locations(config.property("flyway.locations").getString())
             .baselineOnMigrate(true)
+            .baselineVersion("0")
+            .validateOnMigrate(true)
             .load()
 
         flyway.migrate()

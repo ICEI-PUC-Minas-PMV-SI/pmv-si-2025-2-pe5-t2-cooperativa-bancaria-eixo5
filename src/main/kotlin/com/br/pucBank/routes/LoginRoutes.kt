@@ -1,8 +1,8 @@
 package com.br.pucBank.routes
 
 import com.br.pucBank.data.repository.login.LoginRepository
-import com.br.pucBank.domain.login.models.request.LoginRequest
-import com.br.pucBank.domain.login.models.response.LoginResponse
+import com.br.pucBank.domain.login.models.LoginRequest
+import com.br.pucBank.domain.login.models.LoginResponse
 import com.br.pucBank.security.AuthenticationFactory
 import com.br.pucBank.utils.resultFailed
 import com.br.pucBank.utils.resultSuccess
@@ -19,10 +19,9 @@ fun Route.loginRoutes() {
     val authenticationFactory: AuthenticationFactory by inject()
 
     post("/auth/login") {
-
         val loginRequest = call.receive<LoginRequest>()
 
-        val client = repository.loginByAgency(loginRequest) ?: return@post call.resultFailed(
+        val client = repository.loginByAgencyAndAccount(loginRequest) ?: return@post call.resultFailed(
             "Credenciais inválidas",
             status = HttpStatusCode.Unauthorized
         )

@@ -1,4 +1,4 @@
-package com.br.pucBank.domain.login.models.request
+package com.br.pucBank.domain.login.models
 
 import kotlinx.serialization.Serializable
 

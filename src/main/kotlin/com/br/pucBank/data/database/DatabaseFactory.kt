@@ -68,7 +68,7 @@ object DatabaseFactory {
     private fun runFlywayMigrations(dataSource: DataSource, locations: String) {
         val flyway = Flyway
             .configure()
-            .validateMigrationNaming(false)
+            .validateMigrationNaming(true)
             .dataSource(dataSource)
             .locations(locations)
             .baselineOnMigrate(true)

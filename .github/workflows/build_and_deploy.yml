@@ -47,6 +47,7 @@ jobs:
 
       - name: Convert SQL files to Unix format
         run: |
+          sudo apt update && sudo apt install dos2unix -y
           find src/main/resources/db/migration -type f -name "*.sql" -exec dos2unix {} +
 
       - name: Build Ktor fat JAR

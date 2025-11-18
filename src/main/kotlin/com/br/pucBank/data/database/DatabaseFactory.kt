@@ -27,20 +27,6 @@ object DatabaseFactory {
                 Logger.i { "✅ Conexão MySQL OK" }
             }
 
-            println("🔍 Verificando migração no classpath...")
-            val migrationFiles = listOf(
-                "db/migration/V1__create_clients_table.sql"
-            )
-            migrationFiles.forEach { migrationFile ->
-                val resourceUrl = javaClass.classLoader.getResource(migrationFile)
-                if (resourceUrl != null) {
-                    Logger.i { "✅ Arquivo encontrado: $migrationFile" }
-                    Logger.i { "📍 Localização: $resourceUrl" }
-                } else {
-                    Logger.e("❌ ARQUIVO NÃO ENCONTRADO: $migrationFile")
-                }
-            }
-
             Logger.i { "📋 Listando todas as migrações disponíveis..." }
             try {
                 val resources = javaClass.classLoader.getResources("db/migration")
@@ -64,9 +50,10 @@ object DatabaseFactory {
             val flyway = Flyway.configure()
                 .dataSource(url, user, password)
                 .locations(flywayLocations)
+                .validateMigrationNaming(true)
+                .validateOnMigrate(true)
                 .baselineOnMigrate(true)
                 .baselineVersion("0")
-                .validateOnMigrate(true)
                 .load()
 
             // ✅ INFORMAÇÕES DETALHADAS

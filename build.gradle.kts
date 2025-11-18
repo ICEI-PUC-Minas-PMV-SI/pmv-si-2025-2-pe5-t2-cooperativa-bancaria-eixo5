@@ -37,3 +37,33 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
 }
+
+
+tasks.register<Jar>("buildFatJar") {
+    group = "build"
+    description = "Builds a fat JAR including all dependencies and resources"
+
+    archiveBaseName.set("pucBank")
+    archiveClassifier.set("all")
+    archiveVersion.set(project.version.toString())
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(sourceSets.main.get().output)
+
+    from({
+        configurations.runtimeClasspath.get()
+            .filter { it.name.endsWith("jar") }
+            .map { zipTree(it) }
+    })
+
+    from("src/main/resources") {
+        include("**/*")
+    }
+
+    manifest {
+        attributes(
+            "Main-Class" to "com.br.pucBank.ApplicationKt"
+        )
+    }
+}

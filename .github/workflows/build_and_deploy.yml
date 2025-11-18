@@ -45,6 +45,9 @@ jobs:
       - name: Grant execute permission to Gradlew
         run: chmod +x gradlew
 
+      - name: Convert SQL files to Unix format
+        run: |
+          find src/main/resources/db/migration -type f -name "*.sql" -exec dos2unix {} +
 
       - name: Build Ktor fat JAR
         run: ./gradlew clean buildFatJar

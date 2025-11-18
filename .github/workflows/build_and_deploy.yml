@@ -45,14 +45,22 @@ jobs:
       - name: Grant execute permission to Gradlew
         run: chmod +x gradlew
 
+
       - name: Convert SQL files to Unix format
         run: |
           sudo apt update && sudo apt install dos2unix -y
           find src/main/resources/db/migration -type f -name "*.sql" -exec dos2unix {} +
 
-      - name: Build Ktor fat JAR
-        run: ./gradlew clean buildFatJar
 
+      - name: Build Ktor fat JAR
+        run: ./gradlew clean fatJarKtor
+
+
+      - name: Verify migration files in JAR
+        run: |
+            echo "Checking db/migration in the fat JAR..."
+            jar tf build/libs/pucBank-all.jar | grep db/migration || echo "❌ No migration files found!"
+            exit 1
 
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7

@@ -39,31 +39,22 @@ dependencies {
 }
 
 
-tasks.register<Jar>("buildFatJar") {
+tasks.register<Jar>("fatJarKtor") {
     group = "build"
-    description = "Builds a fat JAR including all dependencies and resources"
+    description = "Builds a fat JAR including all dependencies"
 
-    archiveBaseName.set("pucBank")
-    archiveClassifier.set("all")
-    archiveVersion.set(project.version.toString())
-
+    archiveBaseName.set("pucBank-all")
+    archiveVersion.set("")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes["Main-Class"] = "com.br.pucBank.ApplicationKt"
+    }
 
     from(sourceSets.main.get().output)
 
+    dependsOn(configurations.runtimeClasspath)
     from({
-        configurations.runtimeClasspath.get()
-            .filter { it.name.endsWith("jar") }
-            .map { zipTree(it) }
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
     })
-
-    from("src/main/resources") {
-        include("**/*")
-    }
-
-    manifest {
-        attributes(
-            "Main-Class" to "com.br.pucBank.ApplicationKt"
-        )
-    }
 }

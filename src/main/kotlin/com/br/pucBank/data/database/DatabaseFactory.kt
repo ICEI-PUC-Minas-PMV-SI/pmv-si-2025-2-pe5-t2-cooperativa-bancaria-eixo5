@@ -1,6 +1,7 @@
 package com.br.pucBank.data.database
 
 import com.br.com.br.pucBank.utils.Logger
+import com.mysql.cj.log.Log
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import io.ktor.server.application.*
@@ -46,7 +47,7 @@ object DatabaseFactory {
                 Logger.e("❌ Erro ao listar migrações: ${e.message}")
             }
 
-            println("⏳ Configurando Flyway...")
+            Logger.i { "⏳ Configurando Flyway..." }
             val flyway = Flyway.configure()
                 .dataSource(url, user, password)
                 .locations(flywayLocations)
@@ -56,7 +57,6 @@ object DatabaseFactory {
                 .baselineVersion("0")
                 .load()
 
-            // ✅ INFORMAÇÕES DETALHADAS
             val info = flyway.info()
             Logger.i { "📊 Status do Flyway:" }
             Logger.i { "- Migrações aplicadas: ${info.applied().size}" }

@@ -50,6 +50,7 @@ object DatabaseFactory {
             val flyway = Flyway.configure()
                 .dataSource(url, user, password)
                 .locations(flywayLocations)
+                .validateMigrationNaming(true)
                 .validateOnMigrate(true)
                 .baselineOnMigrate(true)
                 .baselineVersion("0")
@@ -62,6 +63,8 @@ object DatabaseFactory {
             if (info.pending().isEmpty()) {
                 Logger.w { "🚨 ALERTA: Nenhuma migração pendente!" }
                 Logger.w { "🚨 O Flyway não está encontrando seu arquivo SQL!" }
+
+                throw IllegalArgumentException()
             }
 
             val result = flyway.migrate()

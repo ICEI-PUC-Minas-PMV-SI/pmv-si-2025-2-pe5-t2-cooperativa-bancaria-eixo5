@@ -1,5 +1,6 @@
 package com.br.pucBank.data.database
 
+import com.br.com.br.pucBank.utils.Logger
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import io.ktor.server.application.*
@@ -11,47 +12,48 @@ object DatabaseFactory {
         val user = System.getenv("DB_USER") ?: environment.config.property("db.user").getString()
         val password = System.getenv("DB_PASSWORD") ?: environment.config.property("db.password").getString()
 
-        val flywayLocations = System.getenv("FLYWAY_LOCATIONS") ?: environment.config.property("flyway.locations").getString()
+        val flywayLocations =
+            System.getenv("FLYWAY_LOCATIONS") ?: environment.config.property("flyway.locations").getString()
 
-        println("=== DIAGNÓSTICO COMPLETO FLYWAY ===")
-        println("📍 URL: $url")
-        println("📍 Locations: $flywayLocations")
+        Logger.i { "=== DIAGNÓSTICO COMPLETO FLYWAY ===" }
+        Logger.i { "📍 URL: $url" }
+        Logger.i { "📍 Locations: $flywayLocations" }
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver")
-            println("✅ Driver MySQL carregado")
+            Logger.i { "✅ Driver MySQL carregado" }
 
             DriverManager.getConnection(url, user, password).use {
-                println("✅ Conexão MySQL OK")
+                Logger.i { "✅ Conexão MySQL OK" }
             }
 
             println("🔍 Verificando migração no classpath...")
-            val migrationFile = "db/migration/V1__Create_clients_table.sql"
+            val migrationFile = "db/migration/V1__create_clients_table.sql"
             val resourceUrl = javaClass.classLoader.getResource(migrationFile)
             if (resourceUrl != null) {
-                println("✅ Arquivo encontrado: $migrationFile")
-                println("📍 Localização: $resourceUrl")
+                Logger.i { "✅ Arquivo encontrado: $migrationFile" }
+                Logger.i { "📍 Localização: $resourceUrl" }
             } else {
-                println("❌ ARQUIVO NÃO ENCONTRADO: $migrationFile")
-                println("💡 O arquivo não está no JAR!")
-                println("💡 Verifique se está em: src/main/resources/db/migration/")
-                println("💡 Execute: jar tf pucBank-all.jar | grep -i migration")
+                Logger.e("❌ ARQUIVO NÃO ENCONTRADO: $migrationFile")
             }
 
-            println("📋 Listando todas as migrações disponíveis...")
+            Logger.i { "📋 Listando todas as migrações disponíveis..." }
             try {
                 val resources = javaClass.classLoader.getResources("db/migration")
                 var foundAny = false
+
                 while (resources.hasMoreElements()) {
                     val resource = resources.nextElement()
-                    println("   - $resource")
+                    Logger.i { resource.toString() }
                     foundAny = true
                 }
+
                 if (!foundAny) {
-                    println("   ❌ NENHUM arquivo de migração encontrado!")
+                    Logger.e("❌ NENHUM arquivo de migração encontrado!")
                 }
+
             } catch (e: Exception) {
-                println("   ❌ Erro ao listar migrações: ${e.message}")
+                Logger.e("❌ Erro ao listar migrações: ${e.message}")
             }
 
             println("⏳ Configurando Flyway...")
@@ -65,24 +67,16 @@ object DatabaseFactory {
 
             // ✅ INFORMAÇÕES DETALHADAS
             val info = flyway.info()
-            println("📊 Status do Flyway:")
-            println("   - Migrações aplicadas: ${info.applied().size}")
-            info.applied().forEach {
-                println("     ✅ ${it.version}: ${it.script}")
-            }
-            println("   - Migrações pendentes: ${info.pending().size}")
-            info.pending().forEach {
-                println("     ⏳ ${it.version}: ${it.script}")
-            }
+            Logger.i { "📊 Status do Flyway:" }
+            Logger.i { "- Migrações aplicadas: ${info.applied().size}" }
 
             if (info.pending().isEmpty()) {
-                println("🚨 ALERTA: Nenhuma migração pendente!")
-                println("🚨 O Flyway não está encontrando seu arquivo SQL!")
+                Logger.w { "🚨 ALERTA: Nenhuma migração pendente!" }
+                Logger.w { "🚨 O Flyway não está encontrando seu arquivo SQL!" }
             }
 
-            println("⏳ Executando migrações...")
             val result = flyway.migrate()
-            println("✅ Resultado: ${result.migrationsExecuted} migrações executadas")
+            Logger.i { "✅ Resultado: ${result.migrationsExecuted} migrações executadas" }
 
             Database.connect(
                 url = url,
@@ -90,10 +84,10 @@ object DatabaseFactory {
                 user = user,
                 password = password
             )
-            println("🎉 DatabaseFactory configurado com sucesso!")
+
+            Logger.i { "🎉 DatabaseFactory configurado com sucesso!" }
 
         } catch (e: Exception) {
-            println("❌ Erro crítico: ${e.message}")
             e.printStackTrace()
             throw e
         }

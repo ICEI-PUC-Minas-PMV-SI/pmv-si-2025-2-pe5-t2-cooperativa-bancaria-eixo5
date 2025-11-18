@@ -1,4 +1,4 @@
-CREATE TABLE clients (
+CREATE TABLE IF NOT EXISTS clients (
     id VARCHAR(250) PRIMARY KEY,
     account INTEGER UNIQUE,
     agency INTEGER NOT NULL,

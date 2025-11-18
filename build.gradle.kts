@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.br.pucBank"
-version = "0.1.6"
+version = "0.1.7"
 
 application {
     mainClass = "com.br.pucBank.ApplicationKt"

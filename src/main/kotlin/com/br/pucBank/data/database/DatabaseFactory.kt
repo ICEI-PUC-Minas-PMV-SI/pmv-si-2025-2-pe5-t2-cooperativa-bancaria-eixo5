@@ -50,7 +50,6 @@ object DatabaseFactory {
             val flyway = Flyway.configure()
                 .dataSource(url, user, password)
                 .locations(flywayLocations)
-                .validateMigrationNaming(true)
                 .validateOnMigrate(true)
                 .baselineOnMigrate(true)
                 .baselineVersion("0")

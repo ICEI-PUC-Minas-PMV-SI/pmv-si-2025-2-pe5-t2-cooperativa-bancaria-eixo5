@@ -1,9 +1,11 @@
 package com.br.pucBank.security
 
+import io.ktor.server.application.Application
+import org.koin.core.module.Module
 import org.koin.dsl.module
 
-val pucBankSecurityModules = module {
-    single { this@module }
-
-    single { AuthenticationFactory(get()) }
+fun injectPucBankSecurityModules(application: Application): Module {
+    return module {
+        single { AuthenticationFactory(application) }
+    }
 }

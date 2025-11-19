@@ -6,7 +6,7 @@ import com.br.pucBank.data.database.DatabaseFactory
 import com.br.pucBank.data.di.pucBankDataModules
 import com.br.pucBank.domain.di.pucBankDomainModules
 import com.br.pucBank.routes.loginRoutes
-import com.br.pucBank.security.pucBankSecurityModules
+import com.br.pucBank.security.injectPucBankSecurityModules
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
@@ -29,7 +29,7 @@ fun main() {
 
         install(Koin) {
             modules(
-                pucBankSecurityModules,
+                injectPucBankSecurityModules(this@embeddedServer),
                 pucBankDomainModules,
                 pucBankDataModules
             )

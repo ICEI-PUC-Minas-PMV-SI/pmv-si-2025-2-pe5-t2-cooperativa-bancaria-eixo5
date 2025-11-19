@@ -8,6 +8,5 @@ data class ClientResponse(
     val name: String,
     val email: String,
     val account: Int,
-    val agency: String,
-    val password: Int
+    val agency: String
 )

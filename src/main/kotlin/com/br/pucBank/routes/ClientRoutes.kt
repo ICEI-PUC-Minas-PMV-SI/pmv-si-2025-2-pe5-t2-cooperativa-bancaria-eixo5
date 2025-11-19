@@ -58,10 +58,10 @@ fun Route.clientRoutes() {
 
             val body = call.receive<ClientRequest>()
 
-            val updated = repository.update(clientId, body)
+            val client = repository.update(clientId, body)
 
-            if (updated) {
-                call.resultSuccess(message = "Cliente atualizado com sucesso")
+            if (client != null) {
+                call.resultSuccess(data = client, message = "Cliente atualizado com sucesso")
             } else {
                 call.defaultClientNotFoundResponse()
             }

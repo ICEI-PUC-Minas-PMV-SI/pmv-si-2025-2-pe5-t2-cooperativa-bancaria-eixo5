@@ -48,7 +48,7 @@ class ClientRepositoryImpl(
         }
     }
 
-    override suspend fun update(id: String, clientRequest: ClientRequest): Boolean = transaction {
+    override suspend fun update(id: String, clientRequest: ClientRequest): ClientResponse? = transaction {
         try {
             Clients.update({ Clients.id eq id }) { updateStatement ->
                 clientRequest.name?.let { updateStatement[name] = it }
@@ -57,10 +57,14 @@ class ClientRepositoryImpl(
                 clientRequest.agency?.let { updateStatement[agency] = it }
                 clientRequest.account?.let { updateStatement[account] = it }
             } > 0
+
+            runBlocking {
+                getById(id)
+            }
         } catch (e: Exception) {
             Logger.e(e.message)
             throw e
-            false
+            null
         }
     }
 

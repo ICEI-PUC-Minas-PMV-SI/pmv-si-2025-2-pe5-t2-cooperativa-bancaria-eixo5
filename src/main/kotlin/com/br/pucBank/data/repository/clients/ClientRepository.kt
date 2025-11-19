@@ -10,7 +10,7 @@ interface ClientRepository {
 
     suspend fun create(clientRequest: ClientRequest): ClientResponse?
 
-    suspend fun update(id: String, clientRequest: ClientRequest): Boolean
+    suspend fun update(id: String, clientRequest: ClientRequest): ClientResponse?
 
     suspend fun delete(id: String): Boolean
 

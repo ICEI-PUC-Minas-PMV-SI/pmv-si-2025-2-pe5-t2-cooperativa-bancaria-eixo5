@@ -8,6 +8,7 @@ import com.br.pucBank.domain.clients.models.ClientRequest
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
 
@@ -20,7 +21,7 @@ class ClientRepositoryImpl(
     }
 
     override suspend fun getById(id: String): ClientResponse? = transaction {
-        Clients.select { Clients.id eq id }
+        Clients.selectAll().where { Clients.id eq id }
             .map(clientResponseMapper::toObject)
             .singleOrNull()
     }
@@ -30,12 +31,12 @@ class ClientRepositoryImpl(
             val clientId = UUID.randomUUID().toString()
 
             Clients.insert {
-                it[id] = clientId
-                it[name] = clientRequest.name
-                it[email] = clientRequest.email
-                it[agency] = clientRequest.agency
-                it[account] = clientRequest.account
-                it[password] = clientRequest.password
+                it[id] = UUID.randomUUID().toString()
+                it[name] = clientRequest.name ?: error("Name is required")
+                it[email] = clientRequest.email ?: error("Email is required")
+                it[agency] = clientRequest.agency ?: error("Agency is required")
+                it[account] = clientRequest.account ?: error("Account is required")
+                it[password] = clientRequest.password ?: error("Password is required")
             }
 
             runBlocking {
@@ -48,12 +49,10 @@ class ClientRepositoryImpl(
     }
 
     override suspend fun update(id: String, clientRequest: ClientRequest): Boolean = transaction {
-        Clients.update(
-            { Clients.id eq id }
-        ) {
-            it[name] = clientRequest.name
-            it[email] = clientRequest.email
-            it[password] = clientRequest.password
+        Clients.update({ Clients.id eq id }) {
+            clientRequest.name?.let { value -> it[name] = value }
+            clientRequest.email?.let { value -> it[email] = value }
+            clientRequest.password?.let { value -> it[password] = value }
         } > 0
     }
 
@@ -67,9 +66,8 @@ class ClientRepositoryImpl(
         agency: String,
         account: Int
     ): ClientResponse? = transaction {
-        Clients.select {
-            (Clients.agency eq agency) and (Clients.account eq account)
-        }.map(clientResponseMapper::toObject)
+        Clients.selectAll().where { (Clients.agency eq agency) and (Clients.account eq account) }
+            .map(clientResponseMapper::toObject)
             .singleOrNull()
     }
 }

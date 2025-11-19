@@ -8,9 +8,6 @@ class LoginRepositoryImpl(
     private val clientRepository: ClientRepository
 ) : LoginRepository {
 
-    override suspend fun loginByAgencyAndAccount(loginRequest: LoginRequest): ClientResponse? {
-        val client = clientRepository.findByAgencyAndAccount(loginRequest.agency, loginRequest.account) ?: return null
-
-        return if (client.password == loginRequest.password) client else null
-    }
+    override suspend fun loginByAgencyAndAccount(loginRequest: LoginRequest): ClientResponse? =
+        clientRepository.findByAgencyAndAccount(loginRequest.agency, loginRequest.account, loginRequest.password)
 }

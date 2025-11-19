@@ -82,9 +82,14 @@ class ClientRepositoryImpl(
 
     override suspend fun findByAgencyAndAccount(
         agency: String,
-        account: Int
+        account: Int,
+        password: Int
     ): ClientResponse? = transaction {
-        Clients.selectAll().where { (Clients.agency eq agency) and (Clients.account eq account) }
+        Clients.selectAll().where {
+            (Clients.agency eq agency) and
+                    (Clients.account eq account) and
+                    (Clients.password eq password)
+        }
             .map(clientResponseMapper::toObject)
             .singleOrNull()
     }

@@ -13,12 +13,9 @@ object DatabaseFactory {
         val url = System.getenv("DB_URL") ?: environment.config.property("db.url").getString()
         val user = System.getenv("DB_USER") ?: environment.config.property("db.user").getString()
         val password = System.getenv("DB_PASSWORD") ?: environment.config.property("db.password").getString()
-        val flywayLocations =
-            System.getenv("FLYWAY_LOCATIONS") ?: environment.config.property("flyway.locations").getString()
 
         Logger.i { "=== CONFIGURAÇÃO DATABASE ===" }
         Logger.i { "📍 URL: $url" }
-        Logger.i { "📍 Flyway Locations: $flywayLocations" }
 
         try {
             val dataSource = createHikariDataSource(

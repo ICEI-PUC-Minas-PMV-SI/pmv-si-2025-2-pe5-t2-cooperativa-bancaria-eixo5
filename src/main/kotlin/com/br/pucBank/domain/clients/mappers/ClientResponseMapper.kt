@@ -12,7 +12,6 @@ class ClientResponseMapper : Mapper<ResultRow, ClientResponse> {
             name = fromObject[Clients.name],
             email = fromObject[Clients.email],
             account = fromObject[Clients.account],
-            agency = fromObject[Clients.agency],
-            password = fromObject[Clients.password]
+            agency = fromObject[Clients.agency]
         )
 }

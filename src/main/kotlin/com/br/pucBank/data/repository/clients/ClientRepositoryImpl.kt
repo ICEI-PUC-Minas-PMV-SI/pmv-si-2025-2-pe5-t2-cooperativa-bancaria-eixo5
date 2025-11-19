@@ -49,19 +49,31 @@ class ClientRepositoryImpl(
     }
 
     override suspend fun update(id: String, clientRequest: ClientRequest): Boolean = transaction {
-        Clients.update({ Clients.id eq id }) { updateStatement ->
-            clientRequest.name?.let { updateStatement[name] = it }
-            clientRequest.email?.let { updateStatement[email] = it }
-            clientRequest.password?.let { updateStatement[password] = it }
-            clientRequest.agency?.let { updateStatement[agency] = it }
-            clientRequest.account?.let { updateStatement[account] = it }
-        }> 0
+        try {
+            Clients.update({ Clients.id eq id }) { updateStatement ->
+                clientRequest.name?.let { updateStatement[name] = it }
+                clientRequest.email?.let { updateStatement[email] = it }
+                clientRequest.password?.let { updateStatement[password] = it }
+                clientRequest.agency?.let { updateStatement[agency] = it }
+                clientRequest.account?.let { updateStatement[account] = it }
+            } > 0
+        } catch (e: Exception) {
+            Logger.e(e.message)
+            throw e
+            false
+        }
     }
 
     override suspend fun delete(id: String): Boolean = transaction {
-        Clients.deleteWhere {
-            Clients.id eq id
-        } > 0
+        try {
+            Clients.deleteWhere {
+                Clients.id eq id
+            } > 0
+        } catch (e: Exception) {
+            Logger.e(e.message)
+            throw e
+            false
+        }
     }
 
     override suspend fun findByAgencyAndAccount(

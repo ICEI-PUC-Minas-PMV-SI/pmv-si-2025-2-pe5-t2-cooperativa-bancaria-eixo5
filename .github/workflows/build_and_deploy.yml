@@ -83,7 +83,7 @@ jobs:
 
           if echo "$LAST_TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
             LAST_VERSION=$(echo "$LAST_TAG" | sed 's/^v//')
-            echo "Valid semver found: $LAST_VERSION"
+            echo "Valid version found: $LAST_VERSION"
           else
             echo "No valid semantic version tag found (ignoring '$LAST_TAG')."
             LAST_VERSION=""
